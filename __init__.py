@@ -1,14 +1,10 @@
-from typing import Optional
 from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 import json
-import re
 
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.sources.base import Source
-from PyQt5.Qt import QWidget
-from calibre.gui2.store.basic_config_widget_ui import Ui_Form
 
 
 class Aladin(Source):
