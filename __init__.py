@@ -1,7 +1,7 @@
 from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
-import json
+import json, re
 
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.sources.base import Source
@@ -95,7 +95,8 @@ class Aladin(Source):
         return None
 
     def _to_metadata(self, data: dict) -> Metadata:
-        authors = data.get("author", "").split(",")
+        authors_str = data.get("author", "")
+        authors = [re.sub(r'\s*\([^)]*\)', '', author).strip() for author in authors_str.split(',')]
 
         metadata = Metadata(data.get("title", ""), authors)
         metadata.comments = data.get("description", "")
