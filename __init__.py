@@ -139,13 +139,11 @@ class Aladin(Source):
     ):
         cover_url = self.get_cached_cover_url(identifiers)
         if cover_url:
-            
             log.info(
                     "Trying to download cover from: %s",
                     cover_url.replace("cover200", "cover500"),
                 )
             try:
-                # Attempt to download cover from cover200 URL
                 with urlopen(
                     cover_url.replace("cover200", "cover500"), timeout=timeout
                 ) as response:
@@ -155,7 +153,6 @@ class Aladin(Source):
             except Exception as e:
                 log.exception("Failed to download cover from: %s", cover_url)
                 log.info("Downloading cover from: %s", cover_url)
-                # If there is an error, try downloading from cover500 URL
                 try:
                     with urlopen(cover_url, timeout=timeout) as response:
                         cover = response.read()
