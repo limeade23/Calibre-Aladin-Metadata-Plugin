@@ -1,6 +1,8 @@
 # Calibre Aladin OpenAPI Metadata Source Plugin
 
 Aladin OpenAPI를 이용한 캘리버 메타데이터 다운로드 플러그인
+
+
 ![Image](https://github.com/user-attachments/assets/e25189b1-95d2-4569-90ad-0c652dfb5f26)
 
 
@@ -9,6 +11,7 @@ Aladin OpenAPI를 이용한 캘리버 메타데이터 다운로드 플러그인
 2. [알라딘 OpenAPI](https://www.aladin.co.kr/ttb/wblog_manage.aspx)에서 API를 발급받는다.
 3. **플러그인 사용자 정의**에서 발급 받은 **API 키**를 입력한다.
 4. 메타데이터 편집하기에서 메타데이터 다운로드를 클릭하면 책 정보와 책 표지를 받아오게 된다.
+
 
 ![Image](https://github.com/user-attachments/assets/ff462f83-a14f-4361-8bda-be266426fefb)
 
