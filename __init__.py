@@ -4,7 +4,7 @@ from urllib.request import urlopen, Request
 import json, re
 
 from calibre.ebooks.metadata.book.base import Metadata
-from calibre.ebooks.metadata.sources.base import Source
+from calibre.ebooks.metadata.sources.base import Option, Source
 
 
 class Aladin(Source):
@@ -12,12 +12,17 @@ class Aladin(Source):
     name = "Aladin OpenAPI"
     description = "Downloads metadata and covers from Aladin Open API."
     author = "Limeade23 <https://github.com/limeade23>"
-    version = (0, 0, 1)
+    version = (0, 0, 2)
     minimum_calibre_version = (6, 10, 0)
 
     ALADIN_ID: str = "aladin"
-    API_KEY: str = ""
     API_URL: str = "http://www.aladin.co.kr/ttb/api/ItemSearch.aspx"
+
+    options = (
+        Option('api_key', 'string', '',
+        _('API Key'),
+        _('발급받은 API 인증키를 입력하세요. 여기서 발급받을 수 있습니다. https://www.aladin.co.kr/ttb/wblog_manage.aspx')),
+    )
 
     capabilities = frozenset(["identify", "cover"])
     touched_fields = frozenset(
@@ -45,23 +50,31 @@ class Aladin(Source):
         identifiers={},
         timeout=30,
     ):
+        if not self.prefs['api_key']:
+            log.error('API 키를 먼저 입력해 주세요.')
+            return
+
         search_keyword = title
-        if title and authors:
-            authors_str = ",".join(authors)
-            search_keyword = f"{title} {authors_str}"
         books = self._search(search_keyword)
+        
         for book in books:
             metadata = self._to_metadata(book)
+            
             if isinstance(metadata, Metadata):
-                mi = metadata.identifiers[self.ALADIN_ID]
+                item_id = metadata.identifiers[self.ALADIN_ID]
+                
+                if metadata.isbn:
+                    self.cache_isbn_to_identifier(metadata.isbn, item_id)
+                
                 if metadata.cover_url:
-                    self.cache_identifier_to_cover_url(mi, metadata.cover_url)
+                    self.cache_identifier_to_cover_url(item_id, metadata.cover_url)
                 self.clean_downloaded_metadata(metadata)
                 result_queue.put(metadata)
 
+
     def _search(self, title: str = "", timeout: int = 30):
         params = {
-            "ttbkey": self.API_KEY,
+            "ttbkey": self.prefs['api_key'],
             "Query": title,
             "QueryType": "Keyword",
             "MaxResults": 10,
@@ -87,12 +100,13 @@ class Aladin(Source):
             if response.status != 200:
                 raise Exception(f"failed to search: {body.decode()}")
 
-        results = json.loads(body).get("item", [])
-
-        if len(results) > 0:
-            return results
-
+        if body:
+            results = json.loads(body).get("item", [])
+            if len(results) > 0:
+                return results
+                
         return None
+
 
     def _to_metadata(self, data: dict) -> Metadata:
         authors_str = data.get("author", "")
@@ -115,13 +129,19 @@ class Aladin(Source):
 
         return metadata
 
-    def get_cached_cover_url(self, identifiers):
 
-        url = None
-        mi = identifiers.get(self.ALADIN_ID, None)
-        if mi is not None:
-            url = self.cached_identifier_to_cover_url(mi)
-        return url
+    def get_cached_cover_url(self, identifiers):
+        item = identifiers.get(self.ALADIN_ID, None)
+        if item is None:
+            isbn = identifiers.get('isbn', None)
+            if isbn:
+                item = self.cached_isbn_to_identifier(isbn)
+        
+        if item:
+            return self.cached_identifier_to_cover_url(item)
+            
+        return None
+
 
     def download_cover(
         self,
@@ -135,6 +155,7 @@ class Aladin(Source):
         get_best_cover=False,
     ):
         cover_url = self.get_cached_cover_url(identifiers)
+        
         if cover_url:
             log.info(
                     "Trying to download cover from: %s",
