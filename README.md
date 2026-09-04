@@ -1,5 +1,7 @@
 # Calibre Aladin OpenAPI Metadata Source Plugin
 
+**2026년 10월 30일 알라딘 OpenAPI 서비스 종료에 따라, 이후 본 저장소는 아카이브(Archive) 예정입니다.**
+
 Aladin OpenAPI를 이용한 캘리버 메타데이터 다운로드 플러그인
 
 
